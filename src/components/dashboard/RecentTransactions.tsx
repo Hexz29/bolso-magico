@@ -4,21 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowUpRight, ArrowDownRight, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useRecentTransactions } from '@/hooks/useTransactions';
 
-interface Transaction {
-  id: string;
-  description: string;
-  amount: number;
-  type: 'income' | 'expense';
-  category: string;
-  date: string;
-}
+export const RecentTransactions: React.FC = () => {
+  const { data: transactions = [], isLoading } = useRecentTransactions(5);
 
-interface RecentTransactionsProps {
-  transactions: Transaction[];
-}
-
-export const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions }) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -32,6 +22,33 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transact
       month: '2-digit',
     }).format(new Date(dateString));
   };
+
+  if (isLoading) {
+    return (
+      <Card className="financial-card h-full">
+        <CardHeader className="flex flex-row items-center justify-between pb-4">
+          <CardTitle className="text-lg font-semibold">Transações Recentes</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 pt-0 space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center justify-between p-3 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-muted animate-pulse rounded-lg" />
+                <div className="space-y-2">
+                  <div className="w-24 h-4 bg-muted animate-pulse rounded" />
+                  <div className="w-16 h-3 bg-muted animate-pulse rounded" />
+                </div>
+              </div>
+              <div className="text-right space-y-2">
+                <div className="w-20 h-4 bg-muted animate-pulse rounded ml-auto" />
+                <div className="w-12 h-3 bg-muted animate-pulse rounded ml-auto" />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="financial-card h-full">
@@ -64,7 +81,7 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transact
           </div>
         ) : (
           <div className="space-y-3">
-            {transactions.slice(0, 5).map((transaction) => (
+            {transactions.map((transaction) => (
               <div
                 key={transaction.id}
                 className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
@@ -73,7 +90,9 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transact
                   <div className={`p-2 rounded-lg ${
                     transaction.type === 'income'
                       ? 'bg-emerald-100 text-emerald-600'
-                      : 'bg-red-100 text-red-600'
+                      : transaction.type === 'expense'
+                      ? 'bg-red-100 text-red-600'
+                      : 'bg-blue-100 text-blue-600'
                   }`}>
                     {transaction.type === 'income' ? (
                       <ArrowUpRight className="h-4 w-4" />
@@ -88,9 +107,13 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transact
                 </div>
                 <div className="text-right">
                   <p className={`font-semibold text-sm text-currency ${
-                    transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'
+                    transaction.type === 'income' 
+                      ? 'text-emerald-600' 
+                      : transaction.type === 'expense'
+                      ? 'text-red-600'
+                      : 'text-blue-600'
                   }`}>
-                    {transaction.type === 'income' ? '+' : '-'}
+                    {transaction.type === 'income' ? '+' : ''}
                     {formatCurrency(Math.abs(transaction.amount))}
                   </p>
                   <p className="text-xs text-muted-foreground">{formatDate(transaction.date)}</p>
