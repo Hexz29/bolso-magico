@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
 
 export interface Transaction {
-  id: string;
+  id: number;
   user_id: string;
   description: string;
   amount: number;
@@ -12,9 +12,7 @@ export interface Transaction {
   category: string;
   account_id?: string;
   date: string;
-  tags?: string[];
   created_at: string;
-  updated_at: string;
 }
 
 export interface CreateTransactionData {
@@ -72,7 +70,7 @@ export const useTransactions = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, ...transactionData }: Partial<Transaction> & { id: string }) => {
+    mutationFn: async ({ id, ...transactionData }: Partial<Transaction> & { id: number }) => {
       const { data, error } = await supabase
         .from('transactions')
         .update(transactionData)
@@ -89,7 +87,7 @@ export const useTransactions = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       const { error } = await supabase
         .from('transactions')
         .delete()

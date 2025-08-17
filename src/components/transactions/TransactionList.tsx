@@ -49,7 +49,7 @@ export const TransactionList: React.FC = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (window.confirm('Tem certeza que deseja excluir esta transação?')) {
       try {
         deleteTransaction(id);

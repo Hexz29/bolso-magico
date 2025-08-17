@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
 
 interface Transaction {
-  id: string;
+  id: number;
   description: string;
   amount: number;
   type: 'income' | 'expense';
@@ -45,7 +45,7 @@ export const Dashboard: React.FC = () => {
         }
 
         const formattedTransactions: Transaction[] = (data || []).map(transaction => ({
-          id: transaction.id.toString(),
+          id: transaction.id,
           description: transaction.description,
           amount: Number(transaction.amount),
           type: transaction.type as 'income' | 'expense',
@@ -157,7 +157,7 @@ export const Dashboard: React.FC = () => {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentTransactions transactions={transactions} />
+        <RecentTransactions />
         
         {/* Placeholder for future charts */}
         <div className="financial-card p-6 flex items-center justify-center">
