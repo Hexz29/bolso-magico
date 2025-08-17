@@ -14,39 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      transactions: {
-        Row: {
-          amount: number
-          category: string
-          created_at: string | null
-          date: string
-          description: string
-          id: number
-          type: string
-          user_id: string | null
-        }
-        Insert: {
-          amount: number
-          category: string
-          created_at?: string | null
-          date: string
-          description: string
-          id?: number
-          type: string
-          user_id?: string | null
-        }
-        Update: {
-          amount?: number
-          category?: string
-          created_at?: string | null
-          date?: string
-          description?: string
-          id?: number
-          type?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
