@@ -6,7 +6,7 @@ import { ArrowUpRight, ArrowDownRight, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useRecentTransactions } from '@/hooks/useTransactions';
 
-export const RecentTransactions: React.FC = () => {
+export const RecentTransactions: React.FC = React.memo(() => {
   const { data: transactions = [], isLoading } = useRecentTransactions(5);
 
   const formatCurrency = (amount: number) => {
@@ -125,4 +125,6 @@ export const RecentTransactions: React.FC = () => {
       </CardContent>
     </Card>
   );
-};
+});
+
+RecentTransactions.displayName = 'RecentTransactions';

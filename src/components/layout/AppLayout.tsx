@@ -17,8 +17,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
-          <p className="text-lg font-medium text-slate-600">Carregando...</p>
+          <div className="relative">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+            <div className="absolute inset-0 h-12 w-12 animate-ping rounded-full border-2 border-primary/10" />
+          </div>
+          <div className="text-center space-y-2">
+            <p className="text-lg font-medium text-slate-600">Carregando...</p>
+            <p className="text-sm text-slate-500">Preparando sua experiência financeira</p>
+          </div>
         </div>
       </div>
     );

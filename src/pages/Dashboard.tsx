@@ -1,107 +1,22 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { Wallet, TrendingUp, TrendingDown, CreditCard } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/components/auth/AuthProvider';
+import { useOptimizedTransactions } from '@/hooks/useOptimizedTransactions';
 
-interface Transaction {
-  id: number;
-  description: string;
-  amount: number;
-  type: 'income' | 'expense';
-  category: string;
-  date: string;
-}
 
-export const Dashboard: React.FC = () => {
-  const { user } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+export const Dashboard: React.FC = React.memo(() => {
+  const { data: transactions, isLoading, stats } = useOptimizedTransactions(10);
 
-  const [stats, setStats] = useState({
-    totalBalance: 0,
-    monthlyIncome: 0,
-    monthlyExpenses: 0,
-    accountsCount: 0,
-  });
-
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      if (!user) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('transactions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('date', { ascending: false })
-          .limit(10);
-
-        if (error) {
-          console.error('Error fetching transactions:', error);
-          return;
-        }
-
-        const formattedTransactions: Transaction[] = (data || []).map(transaction => ({
-          id: transaction.id,
-          description: transaction.description,
-          amount: Number(transaction.amount),
-          type: transaction.type as 'income' | 'expense',
-          category: transaction.category,
-          date: transaction.date,
-        }));
-
-        setTransactions(formattedTransactions);
-
-        // Calculate stats
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
-        
-        const monthlyTransactions = formattedTransactions.filter(t => {
-          const transactionDate = new Date(t.date);
-          return transactionDate.getMonth() === currentMonth && 
-                 transactionDate.getFullYear() === currentYear;
-        });
-
-        const monthlyIncome = monthlyTransactions
-          .filter(t => t.type === 'income')
-          .reduce((sum, t) => sum + t.amount, 0);
-        
-        const monthlyExpenses = monthlyTransactions
-          .filter(t => t.type === 'expense')
-          .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-
-        const totalBalance = formattedTransactions.reduce((sum, t) => {
-          return t.type === 'income' ? sum + t.amount : sum - Math.abs(t.amount);
-        }, 0);
-
-        setStats({
-          totalBalance,
-          monthlyIncome,
-          monthlyExpenses,
-          accountsCount: 0, // Will be implemented when accounts feature is added
-        });
-
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTransactions();
-  }, [user]);
-
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = useCallback((amount: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(amount);
-  };
+  }, []);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -131,25 +46,25 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Saldo Total"
-          value={formatCurrency(stats.totalBalance)}
+          value={formatCurrency(stats?.totalBalance || 0)}
           icon={Wallet}
-          variant={stats.totalBalance >= 0 ? 'success' : 'danger'}
+          variant={(stats?.totalBalance || 0) >= 0 ? 'success' : 'danger'}
         />
         <StatsCard
           title="Receitas do Mês"
-          value={formatCurrency(stats.monthlyIncome)}
+          value={formatCurrency(stats?.monthlyIncome || 0)}
           icon={TrendingUp}
           variant="success"
         />
         <StatsCard
           title="Despesas do Mês"
-          value={formatCurrency(stats.monthlyExpenses)}
+          value={formatCurrency(stats?.monthlyExpenses || 0)}
           icon={TrendingDown}
           variant="danger"
         />
         <StatsCard
-          title="Contas Ativas"
-          value={stats.accountsCount.toString()}
+          title="Total Transações"
+          value={(stats?.totalTransactions || 0).toString()}
           icon={CreditCard}
           variant="default"
         />
@@ -176,4 +91,6 @@ export const Dashboard: React.FC = () => {
       </div>
     </div>
   );
-};
+});
+
+Dashboard.displayName = 'Dashboard';

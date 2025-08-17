@@ -12,7 +12,7 @@ interface StatsCardProps {
   trend?: 'up' | 'down' | 'neutral';
 }
 
-export const StatsCard: React.FC<StatsCardProps> = ({
+export const StatsCard: React.FC<StatsCardProps> = React.memo(({
   title,
   value,
   change,
@@ -53,4 +53,6 @@ export const StatsCard: React.FC<StatsCardProps> = ({
       </CardContent>
     </Card>
   );
-};
+});
+
+StatsCard.displayName = 'StatsCard';
